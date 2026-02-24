@@ -1,0 +1,259 @@
+{
+  "info": {
+    "name": "Facebook Clone API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3005/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "postId", "value": "" },
+    { "key": "commentId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "🔐 AUTH",
+      "item": [
+        {
+          "name": "Registro de usuario",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan Pérez\",\n  \"username\": \"juanperez\",\n  \"email\": \"juan@correo.com\",\n  \"password\": \"miPassword123\",\n  \"bio\": \"Hola, soy Juan!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (con email)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if(res.token) pm.collectionVariables.set('token', res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"juan@correo.com\",\n  \"password\": \"miPassword123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (con username)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"juanperez\",\n  \"password\": \"miPassword123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Ver mi perfil",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/auth/profile",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Editar perfil",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/auth/profile",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan A. Pérez\",\n  \"bio\": \"Bio actualizada\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cambiar contraseña",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/auth/profile",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"miPassword123\",\n  \"newPassword\": \"nuevoPassword456\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 PUBLICACIONES",
+      "item": [
+        {
+          "name": "Obtener todas las publicaciones",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/posts?page=1&limit=10",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "category", "value": "", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Obtener publicación por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/posts/{{postId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Crear publicación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if(res.data && res.data._id) pm.collectionVariables.set('postId', res.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/posts",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Mi primera publicación\",\n  \"category\": \"Tecnología\",\n  \"content\": \"Este es el contenido de mi opinión sobre tecnología\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Editar publicación",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/posts/{{postId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Título actualizado\",\n  \"content\": \"Contenido corregido y actualizado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar publicación",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/posts/{{postId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Repostear publicación",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/posts/{{postId}}/repost",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 COMENTARIOS",
+      "item": [
+        {
+          "name": "Ver comentarios de publicación",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/posts/{{postId}}/comments",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Crear comentario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if(res.data && res.data._id) pm.collectionVariables.set('commentId', res.data._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/posts/{{postId}}/comments",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Este es mi comentario en la publicación\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Editar comentario",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/posts/{{postId}}/comments/{{commentId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Comentario editado y corregido\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar comentario",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/posts/{{postId}}/comments/{{commentId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Repostear comentario",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/posts/{{postId}}/comments/{{commentId}}/repost",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}
